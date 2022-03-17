@@ -7,10 +7,10 @@ Cp_w = 4184; %J/kgK
 Cp_a = 1003.5; %J/kgK
 H_ml = 100; %m
 H_a = 10000; %m
-k = 5.55*10^(-5) %m/s
-S_ocn = 34 %ppm
-P_atm = 10^5 %Pa
-CO2_s = 10.5 %umol/kg
+k = 5.55*10^(-5); %m/s
+S_ocn = 34; %ppm
+P_atm = 10^5; %Pa
+CO2_s = 10.5; %umol/kg
  
 %Timesteps and stuff
 dt = 10^(-5); %timestep in seconds *CHANGE THIS TO WHAT IT ACTUALLY IS
