@@ -1,4 +1,4 @@
-% Constants
+% Constants 
 a = 0.3;
 sigma = 5.67*10^(-8); %W/m^2
 rho_w = 1000; %kg/m^3
