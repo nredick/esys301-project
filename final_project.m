@@ -1,4 +1,4 @@
-% note: work in Gt and convert to ppm for graphing (CO2)
+%% note: work in Gt and convert to ppm for graphing (CO2)
 
 % Constants 
 S_o = 1367; % solar constant; W/m^2
@@ -9,11 +9,13 @@ Cp_w = 4184; % specific heat of water; J/kgK
 Cp_a = 1003.5; % specific heat of air; J/kgK
 H_ml = 100; % height of mixing layer (active) of ocean; m
 H_a = 10000; % height of the atmosphere; m
+H_ocn = 1000; % deep ocean depth; m
 k = 5.55*10^(-5); % piston velocity; m/s
 S_ocn = 34; % salinity of the ocean surface; ppm
 P_atm = 10^5; % atmospheric pressure; Pa
 CO2_s = 10.5; % dissolved CO2 in the surface ocean; umol/kg
- 
+A_earth = 4*pi*6371e03^2; %Earth surface area; m^2
+
 % Time steps and stuff
 dt = 10^(-5); % timestep in seconds *todo CHANGE THIS TO WHAT IT ACTUALLY IS
 Ntot = 0; % number of timesteps needed *todo CHANGE THIS TO WHAT IT ACTUALLY IS
@@ -21,7 +23,12 @@ Ntot = 0; % number of timesteps needed *todo CHANGE THIS TO WHAT IT ACTUALLY IS
 % Conversion factors
 s2y = 31536000; % seconds to years
 % todo: get consts for the following equation
-GT2umolperkg = GT2g*mol2umol / (mu_CO2 * rhow * Aearth * Hocn);  % umol/kg to GT conversion umol/kg/GT
+
+GT2g = 1e15; %Gt to gram conversion; g/Gt
+mol2umol = 1e06; %mol to umol conversion; umol/mol
+mu_CO2 = 44; %CO2 molecular weight; g/mol
+
+GT2umolperkg = GT2g*mol2umol / (mu_CO2 * rho_w * Aearth * Hocn);  % umol/kg to GT conversion umol/kg/GT
 Gt2ppm = 0.1292; % Gt to ppm conversion; Gt/ppmv
 
 % Parameters we will change for experiments 
@@ -44,7 +51,7 @@ T_e(1) = 280;
 T_a(1) = 230;
 CO2_atm(1) = 280; % ppm 
 M_a(1) = 0;
- 
+
 time(1) = 0;
 e_a(1) = 0.8;
  
