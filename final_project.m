@@ -23,6 +23,7 @@ Ntot = 0; % number of timesteps needed *todo CHANGE THIS TO WHAT IT ACTUALLY IS
 % Conversion factors
 s2y = 31536000; % seconds to years
 % todo: get consts for the following equation
+
 GT2g = 1e15; %Gt to gram conversion; g/Gt
 mol2umol = 1e06; %mol to umol conversion; umol/mol
 mu_CO2 = 44; %CO2 molecular weight; g/mol
@@ -48,15 +49,28 @@ a = nan(1, Ntot+1); % solar constant; W/m^2
 % Define initial conditions
 T_e(1) = 280;
 T_a(1) = 230;
-CO2_atm(1) = 280;
+CO2_atm(1) = 280; % ppm 
 M_a(1) = 0;
 
 time(1) = 0;
 e_a(1) = 0.8;
  
 % Time step
+dt = 0.24 / s2y; % time step (atmospheric temp); secs 
+n = 100; % number of time steps 
+
+%% Run model 
+
+for t = 1 : n 
+    % earth temp
+    T_e(t+1) = dt * ( ((S_o/4)*(1-a(t))+e_a(t)*sigma*(T_a(t)^4)- ...
+        sigma*(T_e(t)^4) ) / (rho_w*Cp_w*H_ml)) + T_e(t);
+
+    % emissivity
+    e_a(t) = e_a(1) * (1+);
+
+    % time
+    time(t+1) = time(t) + dt;
+end
  
-% Equations
-e_a(t) = 0.8*(1 + 0.054*log(CO2_atm(t)/280));
- 
-% Plot
+%% Plot
