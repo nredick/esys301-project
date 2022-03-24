@@ -21,13 +21,15 @@ c_aersol = 3.65e-13; % relating aerosol concentration to earth albedo; kg^-1
 % Conversion factors
 s2y = 31536000; % seconds to years
 % todo: get consts for the following equation
-
 GT2g = 1e15; %Gt to gram conversion; g/Gt
 mol2umol = 1e06; %mol to umol conversion; umol/mol
 mu_CO2 = 44; %CO2 molecular weight; g/mol
-
 GT2umolperkg = GT2g*mol2umol / (mu_CO2 * rho_w * A_earth * H_ocn);  % umol/kg to GT conversion umol/kg/GT
 Gt2ppm = 1/0.1291; % Gt to ppm conversion; ppmv/Gt
+
+% Time step
+dt = 0.24 / s2y; % time step (atmospheric temp); secs 
+n = 100; % number of time steps 
 
 % Model parameters we will change for experiments (aka eruptions) 
 F_CO2 = 0; % Amount of CO2 released by eruption *CHANGE TO REAL VALUE
@@ -36,14 +38,14 @@ tau_aero = 0; % residence time for aerosols in the atmosphere
 % todo: something for how explosive it is which will change the time constant
  
 % Initialize & preallocate arrays
-T_e = nan(1, Ntot+1); % temperature of earth; deg K
-T_a = nan(1, Ntot+1); % temperature of atmosphere; deg K
-CO2_atm = nan(1, Ntot+1); % conc. of CO2 in atmosphere; Gt 
-M_a = nan(1, Ntot+1); % mass of aerosols in atmosphere; kg
+T_e = nan(1, n+1); % temperature of earth; deg K
+T_a = nan(1, n+1); % temperature of atmosphere; deg K
+CO2_atm = nan(1, n+1); % conc. of CO2 in atmosphere; Gt 
+M_a = nan(1, n+1); % mass of aerosols in atmosphere; kg
  
-time = nan(1, Ntot+1); % time; s
-e_a = nan(1, Ntot+1); % atmospheric emissivity (longwave)
-a = nan(1, Ntot+1); % solar constant; W/m^2
+time = nan(1, n+1); % time; s
+e_a = nan(1, n+1); % atmospheric emissivity (longwave)
+a = nan(1, n+1); % solar constant; W/m^2
  
 % Define initial conditions
 T_e(1) = 280;
@@ -54,10 +56,6 @@ M_a(1) = 0;
 time(1) = 0;
 e_a(1) = 0.8; % reference emissivity
 a(1) = 0.3; % reference albedo 
- 
-% Time step
-dt = 0.24 / s2y; % time step (atmospheric temp); secs 
-n = 100; % number of time steps 
 
 %% Run model 
 
