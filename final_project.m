@@ -2,7 +2,7 @@
 
 % Constants 
 S_o = 1367; % solar constant; W/m^2
-sigma = 5.67*10^(-8); % stefan-boltzmann const; Js^-1m^-2K^-4
+sigma = 5.67e-8; % stefan-boltzmann const; Js^-1m^-2K^-4
 rho_w = 1000; % water density; kg/m^3
 rho_a = 1.225; % air density; kg/m^3
 Cp_w = 4184; % specific heat of water; J/kgK
@@ -10,15 +10,13 @@ Cp_a = 1003.5; % specific heat of air; J/kgK
 H_ml = 100; % height of mixing layer (active) of ocean; m
 H_a = 10000; % height of the atmosphere; m
 H_ocn = 1000; % deep ocean depth; m
-k = 5.55*10^(-5); % piston velocity; m/s
-S_ocn = 34; % salinity of the ocean surface; ppm
+k = 5.55e-5; % piston velocity; m/s
+S_ocn = 34; % salinity of the ocean surface; ppt??
 P_atm = 10^5; % atmospheric pressure; Pa
-CO2_s = 10.5; % dissolved CO2 in the surface ocean; umol/kg
-A_earth = 4*pi*6371e03^2; %Earth surface area; m^2
-
-% Time steps and stuff
-dt = 10^(-5); % timestep in seconds *todo CHANGE THIS TO WHAT IT ACTUALLY IS
-Ntot = 0; % number of timesteps needed *todo CHANGE THIS TO WHAT IT ACTUALLY IS
+CO2_s = 242.7; % dissolved CO2 in the surface ocean; Gt
+A_earth = 4*pi*6371e03^2; % Earth surface area; m^2
+c_emissivity = 0.054; % relating CO2 concentration to atmospheric emissivity
+c_aersol = 3.65e-13; % relating aerosol concentration to earth albedo; kg^-1
  
 % Conversion factors
 s2y = 31536000; % seconds to years
@@ -28,12 +26,13 @@ GT2g = 1e15; %Gt to gram conversion; g/Gt
 mol2umol = 1e06; %mol to umol conversion; umol/mol
 mu_CO2 = 44; %CO2 molecular weight; g/mol
 
-GT2umolperkg = GT2g*mol2umol / (mu_CO2 * rho_w * Aearth * Hocn);  % umol/kg to GT conversion umol/kg/GT
-Gt2ppm = 0.1292; % Gt to ppm conversion; Gt/ppmv
+GT2umolperkg = GT2g*mol2umol / (mu_CO2 * rho_w * A_earth * H_ocn);  % umol/kg to GT conversion umol/kg/GT
+Gt2ppm = 1/0.1291; % Gt to ppm conversion; ppmv/Gt
 
-% Parameters we will change for experiments 
+% Model parameters we will change for experiments (aka eruptions) 
 F_CO2 = 0; % Amount of CO2 released by eruption *CHANGE TO REAL VALUE
-F_a = 0; % Amount of aerosols released by eruption *CHANGE TO REAL VALUE
+F_aero = 0; % Amount of aerosols released by eruption *CHANGE TO REAL VALUE
+tau_aero = 0; % residence time for aerosols in the atmosphere 
 % todo: something for how explosive it is which will change the time constant
  
 % Initialize & preallocate arrays
@@ -49,11 +48,12 @@ a = nan(1, Ntot+1); % solar constant; W/m^2
 % Define initial conditions
 T_e(1) = 280;
 T_a(1) = 230;
-CO2_atm(1) = 280; % ppm 
+CO2_atm(1) = 280 / Gt2ppm; % Gt 
 M_a(1) = 0;
 
 time(1) = 0;
-e_a(1) = 0.8;
+e_a(1) = 0.8; % reference emissivity
+a(1) = 0.3; % reference albedo 
  
 % Time step
 dt = 0.24 / s2y; % time step (atmospheric temp); secs 
@@ -62,12 +62,31 @@ n = 100; % number of time steps
 %% Run model 
 
 for t = 1 : n 
-    % earth temp
-    T_e(t+1) = dt * ( ((S_o/4)*(1-a(t))+e_a(t)*sigma*(T_a(t)^4)- ...
-        sigma*(T_e(t)^4) ) / (rho_w*Cp_w*H_ml)) + T_e(t);
+    % CO2
+    CO2_atm(t+1) = (dt * (F)) + CO2_atm(t); 
 
     % emissivity
-    e_a(t) = e_a(1) * (1+);
+    e_a(t) = e_a(1) * (1 + c_emissivity * ln(CO2_atm(t) / CO2_atm(1)));
+
+    % albedo
+    a(t) = a(1) + (c_aersol * M_a(t)); 
+
+    % earth temp
+    T_e(t+1) = (dt * (((S_o/4)*(1-a(t))+e_a(t)*sigma*(T_a(t)^4) - ...
+        sigma*(T_e(t)^4)) / (rho_w*Cp_w*H_ml))) + T_e(t);
+
+    % atmospheric temp
+    T_a(t+1) = (dt * ((e_a*sigma*(T_e(t)^4)-2*e_a*sigma*(T_a(t)^4)) / ...
+        (rho_a*Cp_a*H_a))) + T_a(t);
+
+    % todo: calc when co2 reaches equilibrium then add boom 
+
+    % co2 pre boom
+    k0 = k0calc(T_e(t), S_ocn); 
+    CO2_atm(t+1) = (dt*((-k/(H_ml))*k0*CO2_atm(t)*P_atm-CO2_s))+CO2_atm(t);
+
+    % aerosols 
+    M_a(t+1) = (dt * (M_a(t)/tau_aero)) + M_a(t); 
 
     % time
     time(t+1) = time(t) + dt;
