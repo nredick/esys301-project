@@ -19,7 +19,7 @@ c_emissivity = 0.054; % relating CO2 concentration to atmospheric emissivity
 c_aersol = 3.65e-13; % relating aerosol concentration to earth albedo; kg^-1
  
 % Conversion factors
-s2y = 31536000; % seconds to years
+s2y = 31536000; %seconds to year conversion; seconds/year
 % todo: get consts for the following equation
 GT2g = 1e15; %Gt to gram conversion; g/Gt
 mol2umol = 1e06; %mol to umol conversion; umol/mol
@@ -28,8 +28,8 @@ GT2umolperkg = GT2g*mol2umol / (mu_CO2 * rho_w * A_earth * H_ocn);  % umol/kg to
 Gt2ppm = 1/0.1291; % Gt to ppm conversion; ppmv/Gt
 
 % Time step
-dt = 0.24 / s2y; % time step (atmospheric temp); secs 
-n = 100; % number of time steps 
+dt = (0.24/100)*s2y; % time step (atmospheric temp); secs 
+n = round((100*s2y)/dt); % number of time steps needed to it runs for 100 years. we can change this
 
 % Model parameters we will change for experiments (aka eruptions) 
 F_CO2 = 0; % Amount of CO2 released by eruption *CHANGE TO REAL VALUE
