@@ -1,4 +1,4 @@
-function k0 = k0calc(t,s)
+function k0_Gt_Pa = k0calc(t,s)
 %
 % Calculate solubility coefficient of H2CO3 K0 as a function of
 % T (K) and S (psu). 
@@ -30,10 +30,23 @@ tk100 = tk/100.0;
 tk1002=tk100*tk100;
 
 
-k0 = exp(93.4517/tk100 - 60.2409 + 23.3585 * log(tk100) + ...
+k0_umol_kg_atm = exp(93.4517/tk100 - 60.2409 + 23.3585 * log(tk100) + ...
 		s * (.023517 - 0.023656 * tk100 + 0.0047036 * tk1002));
     
 % BTU: Change units from mol/kg/atm --> micromol/kg/atm
 
-k0 = k0 * 1e06 ; 
+k0_umol_kg_atm = k0_umol_kg_atm * 1e06 ; 
 
+%Convert units so it works with our math
+GT2g = 1e15; %Gt to gram conversion; g/Gt
+mol2umol = 1e06; %mol to umol conversion; umol/mol
+mu_CO2 = 44; %CO2 molecular weight; g/mol
+rho_w = 1000; % water density; kg/m^3
+A_earth = 4*pi*6371e03^2; % Earth surface area; m^2
+H_ocn = 1000; % deep ocean depth; m
+
+GT2umolperkg = GT2g*mol2umol / (mu_CO2 * rho_w * A_earth * H_ocn);  % umol/kg to GT conversion umol/kg/GT
+atm2Pa = 101325; %Pa/atm
+
+k0_umol_kg_Pa = (k0_umol_kg_atm/atm2Pa);
+k0_Gt_Pa = k0_umol_kg_Pa/GT2umolperkg;
