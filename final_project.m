@@ -18,7 +18,7 @@ P_atm = 10^5; % atmospheric pressure; Pa
 CO2_s = 242.7; % dissolved CO2 in the surface ocean; Gt
 A_earth = 4*pi*6371e03^2; % Earth surface area; m^2
 c_emissivity = 0.054; % relating CO2 concentration to atmospheric emissivity
-c_aerosol = 3.65e-13; % relating aerosol concentration to earth albedo; kg^-1
+c_aerosol = 1.02074e-10; % relating aerosol concentration to earth albedo; tonnes^-1
 
 %% Conversion factors
 s2y = 1/31536000; % seconds to year conversion; year/second
@@ -33,9 +33,9 @@ atm2Pa = 101325; % Pa/atm
 
 %% Experimental model parameters
 
-% Pinatubo 
+% Pinatubo
 F_CO2 = 0.04; % Amount of CO2 (Gt) released by eruption 
-F_aero = 20; % Amount of aerosols (Gt) released by eruption 
+F_aero = 20e6; % Amount of aerosols (tonnes) released by eruption 
 tau_aero = 1/s2y; % residence time for aerosols in the atmosphere
 % todo: something for how explosive it is which will change the time constant
 
@@ -86,17 +86,18 @@ for t = 1 : n
     T_a(t+1) = (dt * ((e_a(t)*sigma*(T_e(t)^4)-2*e_a(t)*sigma*(T_a(t)^4)) / ...
         (rho_a*Cp_a*H_a))) + T_a(t);
 
-    % todo: calc when co2 reaches equilibrium then add boom 
-    %     avg = 5000;
-    %     if t > avg && entered == false
-    %         delta = CO2_atm(t-avg)/CO2_atm(t)
-    %         if delta > 0.95 && delta < 1.05
-    %             % has reached equilibrium??
-    %             CO2_atm(t+1) = CO2_atm(t+1) + F_CO2; % add the forcing 
-    %             
-    %             entered = true; 
-    %         end 
-    %     end 
+    %todo: calc when co2 reaches equilibrium then add boom 
+         avg = 5000;
+         if t > avg && entered == false
+             delta = CO2_atm(t-avg)/CO2_atm(t)
+             if delta > 0.95 && delta < 1.05
+                 % has reached equilibrium??
+                 CO2_atm(t+1) = CO2_atm(t+1) + F_CO2;% add the forcing 
+                 display('I did it at')
+                 t
+                 entered = true; 
+             end 
+         end 
 
     % aerosols 
     M_a(t+1) = (dt * (M_a(t)/tau_aero)) + M_a(t);
