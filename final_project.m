@@ -89,12 +89,14 @@ for t = 1 : n
     %todo: calc when co2 reaches equilibrium then add boom 
          avg = 5000;
          if t > avg && entered == false
-             delta = CO2_atm(t-avg)/CO2_atm(t)
-             if delta > 0.95 && delta < 1.05
+             delta = CO2_atm(t-avg)/CO2_atm(t);
+             if delta > 0.9995 && delta < 1.0005
                  % has reached equilibrium??
                  CO2_atm(t+1) = CO2_atm(t+1) + F_CO2;% add the forcing 
-                 display('I did it at')
+                 M_a(t+1) = F_aero;
+                 fprintf('Spike at')
                  t
+                 time(t)
                  entered = true; 
              end 
          end 
@@ -110,15 +112,21 @@ end
 
 figure(1)
 plot(time, CO2_atm)
+title('atmospheric CO2')
 
 figure(2)
-plot(time, T_e)
+plot(time, a)
+title('Albedo')
 
 figure(3)
-plot(time, T_a)
+plot(time, e_a)
+title('Emissivity')
 
 figure(4)
-plot(time, a)
+plot(time, T_e, time, T_a)
+legend('Earth','Atmosphere')
+title('Temperatures')
 
 figure(5)
-plot(time, e_a)
+plot(time, M_a)
+title('Mass aerosols')
