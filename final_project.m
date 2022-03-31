@@ -41,7 +41,7 @@ tau_aero = 1/s2y; % residence time for aerosols in the atmosphere
 
 %% Time step
 dt = (0.24/100)/s2y; % time step (atmospheric temp); secs 
-n = round((500/s2y)/dt) % number of time steps needed to it runs for x years. we can change this
+n = round((100/s2y)/dt); % number of time steps needed to it runs for x years. we can change this
  
 %% Initialize, alocate, & define initial conditions
 T_e = nan(1, n+1); % temperature of earth; deg K
@@ -52,6 +52,7 @@ M_a = nan(1, n+1); % mass of aerosols in atmosphere; kg
 time = nan(1, n+1); % time; s
 e_a = nan(1, n+1); % atmospheric emissivity (longwave)
 a = nan(1, n+1); % solar constant; W/m^2
+change = nan(1, n+1);
  
 % Define initial conditions
 T_e(1) = 280;
@@ -65,11 +66,11 @@ a(1) = 0.3; % reference albedo
 entered = false;
 
 %% Run model 
-
 for t = 1 : n 
     % co2 pre boom
     k0 = k0calc(T_e(t), S_ocn);
     P_CO2 = (CO2_atm(t)*Gt2ppm)*10^(-6)*atm2Pa;
+    %change = ((-k/(H_ml))*((k0*P_CO2)-CO2_s));
     CO2_atm(t+1) = CO2_atm(t) + (dt*((-k/(H_ml))*((k0*P_CO2)-CO2_s)));
     
     % emissivity
@@ -86,23 +87,22 @@ for t = 1 : n
     T_a(t+1) = (dt * ((e_a(t)*sigma*(T_e(t)^4)-2*e_a(t)*sigma*(T_a(t)^4)) / ...
         (rho_a*Cp_a*H_a))) + T_a(t);
 
-    %todo: calc when co2 reaches equilibrium then add boom 
+    %% %todo: calc when co2 reaches equilibrium then add boom 
          avg = 5000;
          if t > avg && entered == false
              delta = CO2_atm(t-avg)/CO2_atm(t);
              if delta > 0.9995 && delta < 1.0005
                  % has reached equilibrium??
-                 CO2_atm(t+1) = CO2_atm(t+1) + F_CO2;% add the forcing 
-                 M_a(t+1) = F_aero;
-                 fprintf('Spike at')
-                 t
-                 time(t)
+                 CO2_atm(t+1) = CO2_atm(t+1) + F_CO2;% add the forcing
+                 %CO2_atm(t+1) = CO2_atm(t) + (dt*(F_CO2-(k/(H_ml))* ...
+                %((k0*P_CO2)-CO2_s)) );
+                 M_a(t) = M_a(t) + F_aero;
                  entered = true; 
              end 
          end 
-
+%%
     % aerosols 
-    M_a(t+1) = (dt * (M_a(t)/tau_aero)) + M_a(t);
+    M_a(t+1) = (dt * (-M_a(t)/tau_aero)) + M_a(t);
 
     % time
     time(t+1) = time(t) + dt;
@@ -111,22 +111,31 @@ end
 %% Plot
 
 figure(1)
-plot(time, CO2_atm)
+plot(time*s2y, CO2_atm)
+xlim([35 80])
 title('atmospheric CO2')
 
 figure(2)
-plot(time, a)
+plot(time*s2y, a)
+xlim([35 80])
 title('Albedo')
 
 figure(3)
-plot(time, e_a)
+plot(time*s2y, e_a)
+xlim([35 80])
 title('Emissivity')
 
 figure(4)
-plot(time, T_e, time, T_a)
-legend('Earth','Atmosphere')
-title('Temperatures')
+plot(time*s2y, T_e)
+xlim([30 80])
+title('Earth Temp')
+
+figure(6)
+plot(time*s2y,T_a)
+xlim([35 80])
+title('Atm Temp')
 
 figure(5)
-plot(time, M_a)
+plot(time*s2y, M_a)
+xlim([35 80])
 title('Mass aerosols')
