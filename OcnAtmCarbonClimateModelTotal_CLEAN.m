@@ -452,7 +452,7 @@ plot(time(1:end-1), FCO2_ao/sec2yr, 'r-')
 hold on
 xlabel('time (years)')
 ylabel('CO2 Flux surface [mol/m3/yr]')
-title('Surface Ocean Carbin Fluxes - Temporal Evolution')
+title('Surface Ocean Carbon Fluxes - Temporal Evolution')
 hold on
 grid on
 
