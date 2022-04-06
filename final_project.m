@@ -13,7 +13,7 @@ H_ml = 100; % height of mixing layer (active) of ocean; m
 H_a = 10000; % height of the atmosphere; m
 H_ocn = 1000; % deep ocean depth; m
 k = 5.55e-5; % piston velocity; m/s
-S_ocn = 34; % salinity of the ocean surface; ppt??
+S_ocn = 34; % surface ocean salinity; ppt
 P_atm = 10^5; % atmospheric pressure; Pa
 CO2_s = 242.7; % dissolved CO2 in the surface ocean; Gt
 A_earth = 4*pi*6371e03^2; % Earth surface area; m^2
@@ -22,8 +22,6 @@ c_aerosol = 1.02074e-10; % relating aerosol concentration to earth albedo; tonne
 
 %% Conversion factors
 s2y = 1/31536000; % seconds to year conversion; year/second
-
-% todo: get consts for the following equation
 GT2g = 1e15; % Gt to gram conversion; g/Gt
 mol2umol = 1e06; %mol to umol conversion; umol/mol
 mu_CO2 = 44; % CO2 molecular weight; g/mol
@@ -46,19 +44,20 @@ n = round((100/s2y)/dt); % number of time steps needed to it runs for x years. w
 %% Initialize, alocate, & define initial conditions
 T_e = nan(1, n+1); % temperature of earth; deg K
 T_a = nan(1, n+1); % temperature of atmosphere; deg K
-CO2_atm = nan(1, n+1); % conc. of CO2 in atmosphere; Gt 
+CO2_atm = nan(1, n+1); % mass of CO2 in atmosphere; Gt 
 M_a = nan(1, n+1); % mass of aerosols in atmosphere; kg
+CO2_socn = nan(1,n+1); % mass of carbon in the surface ocean; Gt
  
 time = nan(1, n+1); % time; s
 e_a = nan(1, n+1); % atmospheric emissivity (longwave)
 a = nan(1, n+1); % solar constant; W/m^2
-change = nan(1, n+1);
  
 % Define initial conditions
 T_e(1) = 280;
 T_a(1) = 230;
 CO2_atm(1) = 280 / Gt2ppm; % Gt 
 M_a(1) = 0;
+CO2_socn(1) = 242.7;
 
 time(1) = 0;
 e_a(1) = 0.8; % reference emissivity
@@ -70,8 +69,9 @@ for t = 1 : n
     % co2 pre boom
     k0 = k0calc(T_e(t), S_ocn);
     P_CO2 = (CO2_atm(t)*Gt2ppm)*10^(-6)*atm2Pa;
-    %change = ((-k/(H_ml))*((k0*P_CO2)-CO2_s));
-    CO2_atm(t+1) = CO2_atm(t) + (dt*((-k/(H_ml))*((k0*P_CO2)-CO2_s)));
+    CO2_socn(t+1) = (dt * (k/(H_ml))*((k0*P_CO2)-CO2_socn(t))-CO2_socn(t)/(1000/s2y)) + CO2_socn(t);
+    M_a(t+1) = (dt * (-M_a(t)/tau_aero)) + M_a(t);
+    CO2_atm(t+1) = CO2_atm(t) + (dt*((-k/(H_ml))*((k0*P_CO2)-CO2_socn(t))))/10;
     
     % emissivity
     e_a(t) = e_a(1) * (1 + c_emissivity * log(CO2_atm(t) / CO2_atm(1)));
@@ -91,13 +91,11 @@ for t = 1 : n
          avg = 5000;
          if t > avg && entered == false
              delta = CO2_atm(t-avg)/CO2_atm(t);
-             if delta > 0.9995 && delta < 1.0005
-                 % has reached equilibrium??
+             if delta > 0.999995 && delta < 1.000005
+                 %time(t)*s2y, t
                  CO2_atm(t+1) = CO2_atm(t+1) + F_CO2;% add the forcing
-                 %CO2_atm(t+1) = CO2_atm(t) + (dt*(F_CO2-(k/(H_ml))* ...
-                %((k0*P_CO2)-CO2_s)) );
                  M_a(t) = M_a(t) + F_aero;
-                 entered = true; 
+                 entered = true;
              end 
          end 
 %%
@@ -109,33 +107,40 @@ for t = 1 : n
 end
  
 %% Plot
+lim = [50 100];
+%lim = [0 10000];
 
 figure(1)
 plot(time*s2y, CO2_atm)
-xlim([35 80])
-title('atmospheric CO2')
+xlim(lim)
+title('Atmospheric CO2')
 
 figure(2)
 plot(time*s2y, a)
-xlim([35 80])
+xlim(lim)
 title('Albedo')
 
 figure(3)
 plot(time*s2y, e_a)
-xlim([35 80])
+xlim(lim)
 title('Emissivity')
 
 figure(4)
 plot(time*s2y, T_e)
-xlim([30 80])
-title('Earth Temp')
+xlim(lim)
+title('Earth Temperature')
 
 figure(6)
 plot(time*s2y,T_a)
-xlim([35 80])
-title('Atm Temp')
+xlim(lim)
+title('Atmosphere Temperature')
 
 figure(5)
 plot(time*s2y, M_a)
-xlim([35 80])
-title('Mass aerosols')
+xlim(lim)
+title('Mass of aerosols')
+
+figure(7)
+plot(time*s2y, CO2_socn)
+xlim(lim)
+title('Surface Ocean CO2')
