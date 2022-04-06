@@ -13,7 +13,7 @@ H_ml = 100; % height of mixing layer (active) of ocean; m
 H_a = 10000; % height of the atmosphere; m
 H_ocn = 1000; % deep ocean depth; m
 k = 5.55e-5; % piston velocity; m/s
-S_ocn = 34; % salinity of the ocean surface; ppt??
+S_ocn = 34; % surface ocean salinity; ppt
 P_atm = 10^5; % atmospheric pressure; Pa
 CO2_s = 242.7; % dissolved CO2 in the surface ocean; Gt
 A_earth = 4*pi*6371e03^2; % Earth surface area; m^2
@@ -22,8 +22,6 @@ c_aerosol = 1.02074e-10; % relating aerosol concentration to earth albedo; tonne
 
 %% Conversion factors
 s2y = 1/31536000; % seconds to year conversion; year/second
-
-% todo: get consts for the following equation
 GT2g = 1e15; % Gt to gram conversion; g/Gt
 mol2umol = 1e06; %mol to umol conversion; umol/mol
 mu_CO2 = 44; % CO2 molecular weight; g/mol
@@ -41,13 +39,14 @@ tau_aero = 1/s2y; % residence time for aerosols in the atmosphere
 
 %% Time step
 dt = (0.24/100)/s2y; % time step (atmospheric temp); secs 
-n = round((500/s2y)/dt) % number of time steps needed to it runs for x years. we can change this
+n = round((100/s2y)/dt); % number of time steps needed to it runs for x years. we can change this
  
 %% Initialize, alocate, & define initial conditions
 T_e = nan(1, n+1); % temperature of earth; deg K
 T_a = nan(1, n+1); % temperature of atmosphere; deg K
-CO2_atm = nan(1, n+1); % conc. of CO2 in atmosphere; Gt 
+CO2_atm = nan(1, n+1); % mass of CO2 in atmosphere; Gt 
 M_a = nan(1, n+1); % mass of aerosols in atmosphere; kg
+CO2_socn = nan(1,n+1); % mass of carbon in the surface ocean; Gt
  
 time = nan(1, n+1); % time; s
 e_a = nan(1, n+1); % atmospheric emissivity (longwave)
@@ -58,6 +57,7 @@ T_e(1) = 280;
 T_a(1) = 230;
 CO2_atm(1) = 280 / Gt2ppm; % Gt 
 M_a(1) = 0;
+CO2_socn(1) = 10.5/GT2umolperkg;
 
 time(1) = 0;
 e_a(1) = 0.8; % reference emissivity
@@ -65,12 +65,13 @@ a(1) = 0.3; % reference albedo
 entered = false;
 
 %% Run model 
-
 for t = 1 : n 
     % co2 pre boom
     k0 = k0calc(T_e(t), S_ocn);
     P_CO2 = (CO2_atm(t)*Gt2ppm)*10^(-6)*atm2Pa;
-    CO2_atm(t+1) = CO2_atm(t) + (dt*((-k/(H_ml))*((k0*P_CO2)-CO2_s)));
+    CO2_socn(t+1) = (dt * (k/(H_ml))*((k0*P_CO2)-CO2_socn(t))-CO2_socn(t)/(1000/s2y)) + CO2_socn(t);
+    M_a(t+1) = (dt * (-M_a(t)/tau_aero)) + M_a(t);
+    CO2_atm(t+1) = CO2_atm(t) + (dt*((-k/(H_ml))*((k0*P_CO2)-CO2_socn(t))))/10;
     
     % emissivity
     e_a(t) = e_a(1) * (1 + c_emissivity * log(CO2_atm(t) / CO2_atm(1)));
@@ -86,39 +87,71 @@ for t = 1 : n
     T_a(t+1) = (dt * ((e_a(t)*sigma*(T_e(t)^4)-2*e_a(t)*sigma*(T_a(t)^4)) / ...
         (rho_a*Cp_a*H_a))) + T_a(t);
 
-    %todo: calc when co2 reaches equilibrium then add boom 
+    %% %todo: calc when co2 reaches equilibrium then add boom 
          avg = 5000;
          if t > avg && entered == false
-             delta = CO2_atm(t-avg)/CO2_atm(t)
-             if delta > 0.95 && delta < 1.05
-                 % has reached equilibrium??
-                 CO2_atm(t+1) = CO2_atm(t+1) + F_CO2;% add the forcing 
-                 display('I did it at')
-                 t
-                 entered = true; 
+             delta = CO2_atm(t-avg)/CO2_atm(t);
+             if delta > 0.999995 && delta < 1.000005
+                 %time(t)*s2y, t
+                 CO2_atm(t+1) = CO2_atm(t+1) + F_CO2;% add the forcing
+                 M_a(t) = M_a(t) + F_aero;
+                 entered = true;
              end 
          end 
-
+%%
     % aerosols 
-    M_a(t+1) = (dt * (M_a(t)/tau_aero)) + M_a(t);
+    M_a(t+1) = (dt * (-M_a(t)/tau_aero)) + M_a(t);
 
     % time
     time(t+1) = time(t) + dt;
 end
  
 %% Plot
+lim = [50 100];
+%lim = [0 100];
 
 figure(1)
-plot(time, CO2_atm)
+plot(time*s2y, CO2_atm*Gt2ppm)
+xlim(lim)
+xlabel('Time (years)')
+ylabel('Concentration (ppm)')
+title('Atmospheric CO2')
 
 figure(2)
-plot(time, T_e)
+plot(time*s2y, a)
+xlim(lim)
+xlabel('Time (years)')
+title('Albedo')
 
 figure(3)
-plot(time, T_a)
+plot(time*s2y, e_a)
+xlim(lim)
+title('Emissivity')
 
 figure(4)
-plot(time, a)
+plot(time*s2y, T_e-273.15)
+xlim(lim)
+xlabel('Time (years)')
+ylabel('Temperature (C)')
+title('Earth Temperature')
 
 figure(5)
-plot(time, e_a)
+plot(time*s2y, M_a)
+xlim(lim)
+xlabel('Time (years)')
+ylabel('tonnes')
+title('Mass of aerosols')
+
+figure(6)
+plot(time*s2y,T_a-273.15)
+xlim(lim)
+xlabel('Time (years)')
+ylabel('Temperature (C)')
+title('Atmosphere Temperature')
+
+figure(7)
+plot(time*s2y, CO2_socn)
+xlim(lim)
+xlabel('Time (years)')
+ylabel('Gt')
+title('Surface Ocean CO2')

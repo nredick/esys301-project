@@ -302,9 +302,9 @@ for tt = tstart : dt*sec2yr : tend
 %    Ta(t+1)     = Ta(t) ; % Keep Ta constant to debug carbon component of the model
 
 % Carbon Atmosphere
-    pCO2atm     = CO2(t) * 1e-06 * 1                      % Partial pressure of CO2 [1 atm]
-    CO2sat(t)   = k0calc(Tw(t), Socn) * pCO2atm;           % k0: output:[umol/kg/atm]; input{[K, psu]; 
-    k000 = k0calc(Tw(t), Socn)
+    pCO2atm     = CO2(t) * 1e-06 * 1;                     % Partial pressure of CO2 [1 atm]
+    CO2sat(t)   = k0calc_original(Tw(t), Socn) * pCO2atm;           % k0: output:[umol/kg/atm]; input{[K, psu]; 
+    k000 = k0calc_original(Tw(t), Socn);
     [CO2ocn(t),pH,HCO3,CO3] = co2calc(Tw(t)-T0,Socn,DICs(t),Alks(t)) ; % [umol/kg,[],umol/kg,umol/kg] = [C, psu, umol/kg, umol/kg]
     
     FCO2_ao(t)  = k/Hml * (CO2sat(t) - CO2ocn(t)) ;        % CO2 flux in surface ocean [umol/kg/sec]
