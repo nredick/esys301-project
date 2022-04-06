@@ -57,7 +57,7 @@ T_e(1) = 280;
 T_a(1) = 230;
 CO2_atm(1) = 280 / Gt2ppm; % Gt 
 M_a(1) = 0;
-CO2_socn(1) = 242.7;
+CO2_socn(1) = 10.5/GT2umolperkg;
 
 time(1) = 0;
 e_a(1) = 0.8; % reference emissivity
@@ -108,16 +108,19 @@ end
  
 %% Plot
 lim = [50 100];
-%lim = [0 10000];
+%lim = [0 100];
 
 figure(1)
-plot(time*s2y, CO2_atm)
+plot(time*s2y, CO2_atm*Gt2ppm)
 xlim(lim)
+xlabel('Time (years)')
+ylabel('Concentration (ppm)')
 title('Atmospheric CO2')
 
 figure(2)
 plot(time*s2y, a)
 xlim(lim)
+xlabel('Time (years)')
 title('Albedo')
 
 figure(3)
@@ -126,21 +129,29 @@ xlim(lim)
 title('Emissivity')
 
 figure(4)
-plot(time*s2y, T_e)
+plot(time*s2y, T_e-273.15)
 xlim(lim)
+xlabel('Time (years)')
+ylabel('Temperature (C)')
 title('Earth Temperature')
-
-figure(6)
-plot(time*s2y,T_a)
-xlim(lim)
-title('Atmosphere Temperature')
 
 figure(5)
 plot(time*s2y, M_a)
 xlim(lim)
+xlabel('Time (years)')
+ylabel('tonnes')
 title('Mass of aerosols')
+
+figure(6)
+plot(time*s2y,T_a-273.15)
+xlim(lim)
+xlabel('Time (years)')
+ylabel('Temperature (C)')
+title('Atmosphere Temperature')
 
 figure(7)
 plot(time*s2y, CO2_socn)
 xlim(lim)
+xlabel('Time (years)')
+ylabel('Gt')
 title('Surface Ocean CO2')
