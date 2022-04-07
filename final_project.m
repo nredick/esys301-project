@@ -31,9 +31,9 @@ atm2Pa = 101325; % Pa/atm
 %% Experimental model parameters
 
 % Pinatubo
-F_CO2 = 0.2; % Amount of CO2 (Gt) released by eruption 
-F_aero = 20e6; % Amount of aerosols (tonnes) released by eruption 
-tau_aero = 1/s2y; % residence time for aerosols in the atmosphere
+F_CO2 = 0.1; % Amount of CO2 (Gt) released by eruption 
+F_aero = 40e6; % Amount of aerosols (tonnes) released by eruption 
+tau_aero = 3/s2y; % residence time for aerosols in the atmosphere
 % todo: something for how explosive it is which will change the time constant
 
 %% Time step
