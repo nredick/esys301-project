@@ -109,6 +109,13 @@ end
 lim = [50 100];
 %lim = [0 100];
 
+figure(1)
+plot(time*s2y, T_e-273.15)
+xlim(lim)
+xlabel('Time (years)','Fontsize',12)
+ylabel('Temperature (degrees C)','Fontsize',12)
+title('Aerosol Mass Sensitivity Analysis','Fontsize',14)
+
 
 % 
 % figure(2)
@@ -125,12 +132,12 @@ lim = [50 100];
 % ylabel('Emissivity','Fontsize',12)
 % title('Evolution of the Emissivity of the Atmosphere','Fontsize',14)
 % 
-figure(4)
-plot(time*s2y, T_e-273.15)
-xlim(lim)
-xlabel('Time (years)','Fontsize',12)
-ylabel('Temperature (degrees C)','Fontsize',12)
-title('Evolution of the Earth Surface Temperature','Fontsize',14)
+% figure(4)
+% plot(time*s2y, T_e-273.15)
+% xlim(lim)
+% xlabel('Time (years)','Fontsize',12)
+% ylabel('Temperature (degrees C)','Fontsize',12)
+% title('Evolution of the Earth Surface Temperature','Fontsize',14)
 % 
 % figure(5)
 % plot(time*s2y, M_a)
