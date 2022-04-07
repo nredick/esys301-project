@@ -1,8 +1,7 @@
 %% note: work in Gt and convert to ppm for graphing (CO2)
+%clear all, close all, clc
 
-clear all, close all, clc
-
-%% Constants 
+%% Constants
 S_o = 1367; % solar constant; W/m^2
 sigma = 5.67e-8; % stefan-boltzmann const; Js^-1m^-2K^-4
 rho_w = 1000; % water density; kg/m^3
@@ -32,9 +31,9 @@ atm2Pa = 101325; % Pa/atm
 %% Experimental model parameters
 
 % Pinatubo
-F_CO2 = 0.04; % Amount of CO2 (Gt) released by eruption 
-F_aero = 20e6; % Amount of aerosols (tonnes) released by eruption 
-tau_aero = 1/s2y; % residence time for aerosols in the atmosphere
+F_CO2 = 0.1; % Amount of CO2 (Gt) released by eruption 
+F_aero = 40e6; % Amount of aerosols (tonnes) released by eruption 
+tau_aero = 3/s2y; % residence time for aerosols in the atmosphere
 % todo: something for how explosive it is which will change the time constant
 
 %% Time step
@@ -77,7 +76,7 @@ for t = 1 : n
     e_a(t) = e_a(1) * (1 + c_emissivity * log(CO2_atm(t) / CO2_atm(1)));
 
     % albedo
-    a(t) = a(1) + (c_aerosol * M_a(t));
+    a(t) = max(a(1) + (c_aerosol * M_a(t)),0.35); %don't go above 0.35
 
     % earth temp
     T_e(t+1) = (dt * (((S_o/4)*(1-a(t))+e_a(t)*sigma*(T_a(t)^4) - ...
@@ -111,47 +110,59 @@ lim = [50 100];
 %lim = [0 100];
 
 figure(1)
-plot(time*s2y, CO2_atm*Gt2ppm)
-xlim(lim)
-xlabel('Time (years)')
-ylabel('Concentration (ppm)')
-title('Atmospheric CO2')
-
-figure(2)
-plot(time*s2y, a)
-xlim(lim)
-xlabel('Time (years)')
-title('Albedo')
-
-figure(3)
-plot(time*s2y, e_a)
-xlim(lim)
-title('Emissivity')
-
-figure(4)
 plot(time*s2y, T_e-273.15)
 xlim(lim)
-xlabel('Time (years)')
-ylabel('Temperature (C)')
-title('Earth Temperature')
+xlabel('Time (years)','Fontsize',12)
+ylabel('Temperature (degrees C)','Fontsize',12)
+title('Aerosol Mass Sensitivity Analysis','Fontsize',14)
 
-figure(5)
-plot(time*s2y, M_a)
-xlim(lim)
-xlabel('Time (years)')
-ylabel('tonnes')
-title('Mass of aerosols')
 
-figure(6)
-plot(time*s2y,T_a-273.15)
-xlim(lim)
-xlabel('Time (years)')
-ylabel('Temperature (C)')
-title('Atmosphere Temperature')
+% 
+% figure(2)
+% plot(time*s2y, a)
+% xlim(lim)
+% xlabel('Time (years)','Fontsize',12)
+% ylabel('Albedo','Fontsize',12)
+% title('Evolution of the Albedo','Fontsize',14)
+% 
+% figure(3)
+% plot(time*s2y, e_a)
+% xlim(lim)
+% xlabel('Time (years)','Fontsize',12)
+% ylabel('Emissivity','Fontsize',12)
+% title('Evolution of the Emissivity of the Atmosphere','Fontsize',14)
+% 
+% figure(4)
+% plot(time*s2y, T_e-273.15)
+% xlim(lim)
+% xlabel('Time (years)','Fontsize',12)
+% ylabel('Temperature (degrees C)','Fontsize',12)
+% title('Evolution of the Earth Surface Temperature','Fontsize',14)
+% 
+% figure(5)
+% plot(time*s2y, M_a)
+% xlim(lim)
+% xlabel('Time (years)','Fontsize',12)
+% ylabel('Mass of Aerosols (tonnes)','Fontsize',12)
+% title('Evoltion of the Mass of Aerosols in the atmosphere','Fontsize',14)
+% 
+% figure(6)
+% plot(time*s2y,T_a-273.15)
+% xlim(lim)
+% xlabel('Time (years)','Fontsize',12)
+% ylabel('Temperature (degrees C)','Fontsize',12)
+% title('Evolution of the Temperature of the Atmosphere','Fontsize',14)
+% 
+% figure(7)
+% plot(time*s2y, CO2_socn)
+% xlim(lim)
+% xlabel('Time (years)','Fontsize',12)
+% ylabel('Mass of CO2 (Gt)','Fontsize',12)
+% title('Evolution of the Surface Ocean CO2','Fontsize',14)
 
-figure(7)
-plot(time*s2y, CO2_socn)
-xlim(lim)
-xlabel('Time (years)')
-ylabel('Gt')
-title('Surface Ocean CO2')
+% figure(1)
+% plot(time*s2y, CO2_atm*Gt2ppm)
+% xlim(lim)
+% xlabel('Time (years)','Fontsize',12)
+% ylabel('CO2 concentration (ppm)','Fontsize',12)
+% title('Evolution of Atmospheric CO2 Concentration','Fontsize',14)
