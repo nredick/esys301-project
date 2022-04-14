@@ -37,7 +37,7 @@ k0_umol_kg_atm = exp(93.4517/tk100 - 60.2409 + 23.3585 * log(tk100) + ...
 
 k0_umol_kg_atm = k0_umol_kg_atm * 1e06 ; 
 
-%Convert units so it works with our math
+%Convert units so it works with our calculations
 GT2g = 1e15; %Gt to gram conversion; g/Gt
 mol2umol = 1e06; %mol to umol conversion; umol/mol
 mu_CO2 = 44; %CO2 molecular weight; g/mol
